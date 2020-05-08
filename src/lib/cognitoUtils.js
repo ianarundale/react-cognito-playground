@@ -1,7 +1,7 @@
 import { CognitoAuth } from 'amazon-cognito-auth-js/dist/amazon-cognito-auth'
 import { CognitoUserPool } from 'amazon-cognito-identity-js'
 import { config as AWSConfig } from 'aws-sdk'
-import appConfig from '../config/app-config.json'
+import appConfig from '../config/app-config'
 
 AWSConfig.region = appConfig.region
 
@@ -66,7 +66,7 @@ const getCognitoSession = () => {
       }
 
       // Resolve the promise with the session credentials
-      console.debug('Successfully got session: ' + JSON.stringify(result))
+      console.log('Successfully got session: ' + JSON.stringify(result))
       const session = {
         credentials: {
           accessToken: result.accessToken.jwtToken,
@@ -89,6 +89,22 @@ const signOutCognitoSession = () => {
   auth.signOut()
 }
 
+
+const getUserFromLocalStorage = () => {
+  return new Promise((resolve, reject) => {
+    const cognitoUser = getCognitoSession()
+      .then((res)=>{
+        debugger
+        resolve(res)
+      })
+      .catch((e)=>{
+        debugger
+        reject()
+      })
+  })
+
+}
+
 export default {
   createCognitoAuth,
   createCognitoUser,
@@ -96,5 +112,6 @@ export default {
   getCognitoSession,
   getCognitoSignInUri,
   parseCognitoWebResponse,
-  signOutCognitoSession
+  signOutCognitoSession,
+  getUserFromLocalStorage
 }

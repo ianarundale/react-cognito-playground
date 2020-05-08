@@ -4,7 +4,10 @@ import './Home.css'
 import { connect } from 'react-redux'
 import cognitoUtils from '../lib/cognitoUtils'
 import request from 'request'
-import appConfig from '../config/app-config.json'
+import appConfig from '../config/app-config'
+
+debugger
+
 
 const mapStateToProps = state => {
   return { session: state.session }
@@ -28,6 +31,7 @@ class Home extends Component {
 
       this.setState({ apiStatus: 'Loading...' })
       request.get(options, (err, resp, body) => {
+        debugger
         let apiStatus, apiResponse
         if (err) {
           // is API server started and reachable?
@@ -44,6 +48,8 @@ class Home extends Component {
         }
         this.setState({ apiStatus, apiResponse })
       })
+    } else {
+      cognitoUtils.getUserFromLocalStorage()
     }
   }
 
