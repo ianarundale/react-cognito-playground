@@ -58,28 +58,34 @@ const parseCognitoWebResponse = (href) => {
 // Gets a new Cognito session. Returns a promise.
 const getCognitoSession = () => {
   return new Promise((resolve, reject) => {
-    const cognitoUser = createCognitoUser()
-    cognitoUser.getSession((err, result) => {
-      if (err || !result) {
-        reject(new Error('Failure getting Cognito session: ' + err))
-        return
-      }
-
-      // Resolve the promise with the session credentials
-      console.log('Successfully got session: ' + JSON.stringify(result))
-      const session = {
-        credentials: {
-          accessToken: result.accessToken.jwtToken,
-          idToken: result.idToken.jwtToken,
-          refreshToken: result.refreshToken.token
-        },
-        user: {
-          userName: result.idToken.payload['cognito:username'],
-          email: result.idToken.payload.email
+    try {
+      const cognitoUser = createCognitoUser()
+      cognitoUser.getSession((err, result) => {
+        if (err || !result) {
+          reject(new Error('Failure getting Cognito session: ' + err))
+          return
         }
-      }
-      resolve(session)
-    })
+
+        // Resolve the promise with the session credentials
+        console.log('Successfully got session: ' + JSON.stringify(result))
+        const session = {
+          credentials: {
+            accessToken: result.accessToken.jwtToken,
+            idToken: result.idToken.jwtToken,
+            refreshToken: result.refreshToken.token
+          },
+          user: {
+            userName: result.idToken.payload['cognito:username'],
+            email: result.idToken.payload.email
+          }
+        }
+        resolve(session)
+      })
+    }
+    catch (e) {
+      debugger
+      reject(e)
+    }
   })
 }
 
@@ -93,16 +99,13 @@ const signOutCognitoSession = () => {
 const getUserFromLocalStorage = () => {
   return new Promise((resolve, reject) => {
     const cognitoUser = getCognitoSession()
-      .then((res)=>{
-        debugger
+      .then((res) => {        
         resolve(res)
       })
-      .catch((e)=>{
-        debugger
-        reject()
+      .catch((e) => {        
+        reject(e)
       })
   })
-
 }
 
 export default {

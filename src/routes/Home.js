@@ -6,51 +6,65 @@ import cognitoUtils from '../lib/cognitoUtils'
 import request from 'request'
 import appConfig from '../config/app-config'
 
-debugger
-
+import { initPreviousSession } from '../actions/session'
 
 const mapStateToProps = state => {
   return { session: state.session }
 }
 
+function mapDispatchToProps(dispatch) {
+  return {
+    initPreviousSession: href => dispatch(initPreviousSession())
+  }
+}
+
 class Home extends Component {
-  constructor (props) {
+  constructor(props) {
     super(props)
     this.state = { apiStatus: 'Not called' }
   }
 
-  componentDidMount () {
-    if (this.props.session.isLoggedIn) {
-      // Call the API server GET /users endpoint with our JWT access token
-      const options = {
-        url: `${appConfig.apiUri}/users`,
-        headers: {
-          Authorization: `Bearer ${this.props.session.credentials.accessToken}`
-        }
-      }
 
-      this.setState({ apiStatus: 'Loading...' })
-      request.get(options, (err, resp, body) => {
-        debugger
-        let apiStatus, apiResponse
-        if (err) {
-          // is API server started and reachable?
-          apiStatus = 'Unable to reach API'
-          console.error(apiStatus + ': ' + err)
-        } else if (resp.statusCode !== 200) {
-          // API returned an error
-          apiStatus = 'Error response received'
-          apiResponse = body
-          console.error(apiStatus + ': ' + JSON.stringify(resp))
-        } else {
-          apiStatus = 'Successful response received.'
-          apiResponse = body
-        }
-        this.setState({ apiStatus, apiResponse })
-      })
-    } else {
-      cognitoUtils.getUserFromLocalStorage()
+  componentDidMount() {
+    this.props.initPreviousSession()
+  }
+
+  doNetworkRequest = (props) => {
+    debugger
+
+    let bearer
+    try {
+      bearer = this.props.session.credentials.accessToken
+    } catch (e) {
+      bearer = ''
     }
+
+    const options = {
+      url: `${appConfig.apiUri}/users`,
+      headers: {
+        Authorization: `Bearer ${bearer}`
+      }
+    }
+
+    this.setState({ apiStatus: 'Loading...' })
+    request.get(options, (err, resp, body) => {
+      debugger
+      let apiStatus, apiResponse
+      if (err) {
+        // is API server started and reachable?
+        apiStatus = 'Unable to reach API'
+        console.error(apiStatus + ': ' + err)
+      } else if (resp.statusCode !== 200) {
+        // API returned an error
+        apiStatus = 'Error response received'
+        apiResponse = body
+        console.error(apiStatus + ': ' + JSON.stringify(resp))
+      } else {
+        apiStatus = 'Successful response received.'
+        apiResponse = body
+      }
+      this.setState({ apiStatus, apiResponse })
+    })
   }
 
   onSignOut = (e) => {
@@ -58,12 +72,12 @@ class Home extends Component {
     cognitoUtils.signOutCognitoSession()
   }
 
-  render () {
+  render() {    
     return (
       <div className="Home">
         <header className="Home-header">
           <img src={logo} className="Home-logo" alt="logo" />
-          { this.props.session.isLoggedIn ? (
+          {this.props.session.isLoggedIn ? (
             <div>
               <p>You are logged in as user {this.props.session.user.userName} ({this.props.session.user.email}).</p>
               <p></p>
@@ -72,14 +86,15 @@ class Home extends Component {
                 <div className="Home-api-response">{this.state.apiResponse}</div>
               </div>
               <p></p>
+              <a className="Home-link" href="#" onClick={this.doNetworkRequest}>Request</a>
               <a className="Home-link" href="#" onClick={this.onSignOut}>Sign out</a>
             </div>
           ) : (
-            <div>
-              <p>You are not logged in.</p>
-              <a className="Home-link" href={cognitoUtils.getCognitoSignInUri()}>Sign in</a>
-            </div>
-          )}
+              <div>
+                <p>You are not logged in.</p>
+                <a className="Home-link" href={cognitoUtils.getCognitoSignInUri()}>Sign in</a>
+              </div>
+            )}
           <div className="Home-details">
             <hr></hr>
             <div className="Home-details-links">
@@ -105,4 +120,4 @@ class Home extends Component {
   }
 }
 
-export default connect(mapStateToProps)(Home)
+export default connect(mapStateToProps, mapDispatchToProps)(Home)

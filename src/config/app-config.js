@@ -1,10 +1,10 @@
 console.log(process.env.AWS_REGION)
 
 let appConfig = {
-    "region": process.env.AWS_REGION,
-    "userPool": process.env.USER_POOL,
-    "userPoolBaseUri": process.env.USER_POOL_BASE_URI,
-    "clientId": process.env.CLIENT_ID,
+    "region": 'eu-west-1',
+    "userPool": 'eu-west-1_rt033XJAo',
+    "userPoolBaseUri": 'https://arundale-test-app.auth.eu-west-1.amazoncognito.com',
+    "clientId": '6nrs5oi8lgalvnk40crs86r6gn',
     "callbackUri": "http://localhost:3000/callback",
     "signoutUri": "http://localhost:3000",
     "tokenScopes": [
